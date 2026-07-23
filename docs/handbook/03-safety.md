@@ -12,10 +12,32 @@ Safety in SovereignInterpreter is a **stack of gates**, not a single flag.
 
 ### 2. Kill-switch
 
-- Defaults: `kill_switch: true`, `kill_switch_path: .kill_switch`
-- Engaged when the path **exists**
-- Asserted in interpreter init/chat/`run_last_code`, `respond` loop, terminal/computer runs, FS ops, CLI start/loop
-- Raises `KillSwitchError`
+**Doctrine (Sovereign Edition):** the kill-switch is **mandatory** — default `kill_switch: true`, path `.kill_switch`. Presence of the path engages the switch; `assert_not_killed` raises `KillSwitchError`. Asserted in interpreter init/chat/`run_last_code`, `respond` loop, terminal/computer runs, FS ops, and CLI start/loop.
+
+REPL envelope:
+
+```text
+[error] KillSwitchError: Kill-switch engaged (found .kill_switch). Halting.
+```
+
+Boot when clear — boxed **Ready** line:
+
+```text
+┌─────────────────────────────────────────┐
+│ Ready  model=llama3.2                   │
+│ endpoint=http://127.0.0.1:11434/v1      │
+│ sandbox=strict  auto_run=off            │
+└─────────────────────────────────────────┘
+```
+
+Engaged — **HALTED** (no Ready session; chats/FS ops stop):
+
+```text
+You: hello
+[error] KillSwitchError: Kill-switch engaged (found .kill_switch). Halting.
+```
+
+Remove the file to clear; `%status` reports `kill_switch=engaged` vs `clear`.
 
 ### 3. SafetyRules patterns
 
@@ -28,9 +50,11 @@ Safety in SovereignInterpreter is a **stack of gates**, not a single flag.
 
 Checked on user text in `chat()`, and again in `respond()` on accumulated messages, model reply, and code before run. Violations raise `SafetyViolation`; scrubbing replaces matches with `[BLOCKED]`.
 
-### 4. Universal fence rule + confirmation
+### 4. Universal fence rule + confirm-first
 
-Model fenced code never auto-runs. `_should_execute` requires explicit intent and either confirmation, or (`auto_run` **and** `user_requests_execution`). Default `auto_run: false`.
+Model fenced code never auto-runs (**confirm-first**). `_should_execute` requires explicit intent and either confirmation, or (`auto_run` **and** `user_requests_execution`). Default `auto_run: false` — `auto_run` only skips the prompt when execution was already requested.
+
+Confirm UI: `[confirm] {language}`, a dim **boxed full-code preview**, then `Run this code? [y/N]:` (deduped; only `y` / `yes` approve).
 
 ```text
   Incoming text / proposed code
@@ -50,6 +74,14 @@ Model fenced code never auto-runs. `_should_execute` requires explicit intent an
         ▼
   runner / FS jail
 ```
+
+### 5. Envelopes, skips, and soft labels
+
+Typed envelopes (`PythonError`, `ShellError`, `ModelOutputError`, `SandboxBlocked`, `ExecutionDenied`, `KillSwitchError`, `CloudForbiddenError`, `SafetyViolation`, …) remap in the REPL to `[error]` or `[skip]`.
+
+- **Sandbox skip** — policy blocks emit `[skip]` only (no misleading `[run]` beforehand).
+- **Soft ANSI** — color applies to the `[tag]` only for `confirm` / `console` / `error` / `skip` / `system` (yellow / dim / red / yellow / cyan); `[model]` and `[run]` stay plain. `NO_COLOR` disables color.
+- **Thinking timer** — `[model] thinking…` while awaiting completion, then `[model] thinking… (Ns)` after return (in-place `\r` cleared before the elapsed line).
 
 ## Beginner
 

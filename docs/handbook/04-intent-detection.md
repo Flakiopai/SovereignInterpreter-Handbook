@@ -22,6 +22,12 @@ Returns true when:
 
 Used by `respond()` as `execution_requested`. Combined with `auto_run` and `confirm` in `_should_execute`.
 
+**Confirm flow (REPL):** when intent says run and `auto_run` does not already cover it, `_confirm` prints `[confirm] {language}`, a dim boxed full-code preview, then `Run this code? [y/N]:` (only `y` / `yes`; deduped — not re-echoed after approval).
+
+**Multi-line input:** wrap a block in `"""` … `"""` (continuation prompt `... `). The joined text is classified by the same helpers — multi-line Python markers make `looks_like_user_code` true and bypass the LLM.
+
+**One-shot exec:** `sovereigninterpreter run "…"`. Invoking `run` is an explicit operator execution request; confirm is auto-approved for that call (`confirm=lambda …: True`).
+
 This is the primary **hallucination-loop prevention** surface: unsolicited fences produce `ExecutionDenied`, display/skip, and **break** — no silent auto-run, no retry storm.
 
 ### CLI order (before `chat`)
@@ -29,9 +35,9 @@ This is the primary **hallucination-loop prevention** surface: unsolicited fence
 ```text
   REPL line
      │
-     ├─ %magic  → handle locally (no LLM)
-     ├─ !cmd    → shell if sandbox allows, else SandboxBlocked
-     └─ else    → interpreter.chat(...)
+     ├─ %magic  → handle locally (no LLM) → [system] status
+     ├─ !cmd    → shell if sandbox allows, else [error] + [system] tip
+     └─ else    → interpreter.chat(...)   (""" multi-line joins first)
 ```
 
 Inside `chat`:
@@ -44,8 +50,27 @@ Inside `chat`:
      └─ LLM path (respond)
            user_requests_execution?
               yes + auto_run → may run without prompt
-              yes + confirm  → ask
-              no             → show fence, ExecutionDenied, stop
+              yes + confirm  → [confirm] + box + [y/N]
+              no             → show fence, ExecutionDenied / [skip], stop
+```
+
+Live shapes:
+
+```text
+  You: %sandbox
+  [system] sandbox=strict
+
+  You: """
+  ... print(1)
+  ... print(2)
+  ... """
+  [run] python → print(1) print(2)
+  [console] 1
+  2
+
+  $ sovereigninterpreter run "print(2+2)"
+  [run] python → print(2+2)
+  [console] 4
 ```
 
 ## Beginner
@@ -55,10 +80,12 @@ The interpreter asks: “Is this **you writing code**, **you asking to run somet
 | You type | What happens |
 |----------|----------------|
 | `print(2+2)` | Runs locally; model not called |
-| `Compute 2+2 in python` | Model may answer; execution allowed by intent |
+| `"""` … multi-line Python … `"""` | Same as typed code — local run if it looks like Python |
+| `Compute 2+2 in python` | Model may answer; then `[confirm]` + box + `[y/N]` |
 | `hello` | Chat only; fences (if any) shown and skipped |
-| `%run` | Runs the last assistant code block you were shown |
-| `!ls` | Shell shortcut (only in `full` sandbox) |
+| `%run` | Runs the last assistant code block (`[system]` / console as applicable) |
+| `!ls` | Shell shortcut (only in `full`; else `[error]` + `[system]` tip) |
+| `sovereigninterpreter run "…"` | One-shot; explicit exec, no interactive confirm |
 
 ## Explain like I’m 12
 

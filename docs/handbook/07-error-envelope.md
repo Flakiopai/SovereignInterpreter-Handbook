@@ -78,7 +78,7 @@ You don’t have to guess which kind it was.
 - `sovereigninterpreter/display.py` — `format_error`, skip routing
 - `tests/test_errors.py`, `tests/test_display.py`
 - Config: `show_tracebacks` in `sovereign.yaml`
-- CHANGELOG `[0.3.0]` envelope list
+- CHANGELOG `[1.0.0]` / `[0.3.0]` envelope list
 
 ## Key takeaway
 

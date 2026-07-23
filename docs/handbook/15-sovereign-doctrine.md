@@ -2,7 +2,7 @@
 
 ## Senior engineer
 
-Doctrine is the **invariant set** enforced by runtime checks in the main repo. The operator-facing table (including the 0.3.0 sandbox row):
+Doctrine is the **invariant set** enforced by runtime checks in the main repo. The operator-facing table (including the v1.0.0 sandbox row):
 
 | Doctrine | Enforcement locus |
 |----------|-------------------|
@@ -14,9 +14,39 @@ Doctrine is the **invariant set** enforced by runtime checks in the main repo. T
 | Confirmation gate | `auto_run` false by default; `_should_execute` |
 | Iteration ceiling | `max_iterations` bounds `respond()` (config also stores `max_turns`) |
 | Safety rules | `SafetyRules` patterns + universal fence rule |
-| Memory pack hooks | `SovereignMemory.export_pack` / `import_pack` |
+| Memory pack hooks | `SovereignMemory.export_pack` / `import_pack`; REPL `%memory export\|import` |
 
 Doctrine regressions are release blockers. Documentation may clarify; it must not soften enforcement.
+
+### Memory packs (local-only, cloud-free)
+
+**Doctrine:** memory packs are **local-only and cloud-free** — `LocalEmbeddings` + on-disk JSON; no hosted memory brokers.
+
+API shape (`memory.py`):
+
+```python
+from sovereigninterpreter import SovereignMemory, MemoryPack
+
+memory = SovereignMemory()
+memory.remember("Prefer local endpoints", kind="long")
+pack = memory.export_pack()          # MemoryPack(short_term=…, long_term=…)
+# persist pack.to_dict() as JSON if desired
+memory.import_pack(pack)
+print(memory.context_block("local endpoints"))
+```
+
+REPL magics (default path `memory.json`):
+
+```text
+  You: %memory export
+  [system] Memory exported short=0 long=1 → …/memory.json
+
+  You: %memory import
+  [system] Memory imported short=0 long=1 ← …/memory.json
+
+  You: %memory
+  [system] Usage: %memory export|import [path]
+```
 
 ```text
   Doctrine (promise)

@@ -15,7 +15,7 @@ Offline unit tests live under `tests/` in the main SovereignInterpreter repo. Th
 | `test_errors.py` | envelope format + categories from runners/respond |
 | `test_display.py` | label formatters, message mapping, thinking print |
 
-CHANGELOG `[0.3.0]` notes the offline suite size at release time; treat the files above as the living map of coverage.
+CHANGELOG `[1.0.0]` notes the offline suite size at release time (72 tests); treat the files above as the living map of coverage.
 
 ```text
   Doctrine / README claim

@@ -7,7 +7,7 @@
 - `self.messages = []`
 - `self.router.clear()`
 
-REPL `%reset` calls `reset()` and prints `Conversation reset.`
+REPL `%reset` calls `reset()` and prints `[system] Conversation reset.`
 
 **What reset does *not* clear:**
 
@@ -19,23 +19,29 @@ REPL `%reset` calls `reset()` and prints `Conversation reset.`
 Display uses a per-turn `turn_start` index so `_display_tail` prints only the current turn’s messages — unrelated to `%reset`, but part of REPL context UX.
 
 ```text
-  %reset
-     │
-     ▼
-  messages = []
-  router.clear()
-     │
-     ▼
-  "Conversation reset."
+  You: %reset
+  [system] Conversation reset.
 
   Still kept: model, sandbox, auto_run, memory packs, files
+```
+
+After reset, a later confirm still uses the live boxed preview (dialogue cleared; confirm UX unchanged):
+
+```text
+  You: write a python script that prints hi
+  [model] thinking…
+  [confirm] python
+  ────────────────────────────
+  print("hi")
+  ────────────────────────────
+  Run this code? [y/N]:
 ```
 
 ## Beginner
 
 `%reset` is “forget this chat,” not “factory reset the whole tool.”
 
-After reset:
+After reset (`[system] Conversation reset.`):
 
 - The model no longer sees earlier messages in this session  
 - Your sandbox mode and model choice stay  
@@ -49,6 +55,7 @@ Start a fresh topic without restarting the process.
   Chalkboard full of notes
        │
   You: %reset
+  [system] Conversation reset.
        │
        ▼
   Wipe the chalkboard

@@ -2,7 +2,15 @@
 
 ## Senior engineer
 
-SovereignInterpreter keeps the familiar **chat → code → console** operator model from upstream interpreter frameworks, but treats **sovereignty as an enforceable invariant**, not a README aspiration.
+**Sovereign Edition** is the local-first, cloud-free, auditable cut of the chat → code → console model: same operator loop as upstream interpreter frameworks, but **sovereignty as an enforceable invariant**, not a README aspiration.
+
+Doctrine pillars (runtime-enforced):
+
+- **Policy sandbox** — sandbox modes + filesystem jail bound blast radius
+- **Kill-switch** — `.kill_switch` halts chats and FS ops immediately
+- **Fence rule** — model-fenced code never auto-runs without intent/confirm/`%run`
+- **Intent detection** — chat vs execute vs typed Python before any runner
+- **Cloud gate** — `allow_cloud: false` + `assert_llm_allowed` reject non-local LLM URLs
 
 That means, in the main repo today:
 
@@ -11,6 +19,8 @@ That means, in the main repo today:
 - Execution is gated by **intent**, **confirmation**, **sandbox mode**, and a **filesystem jail**.
 - A filesystem **kill-switch** can halt chats and FS ops immediately.
 - Cloud SDKs and remote message brokers are absent by design.
+
+Upstream Rust / TUI / MCP / OS Seatbelt surfaces are **intentionally excluded** from Sovereign Edition — smaller attack surface, clearer audit path.
 
 The philosophical bet: local operators should own the blast radius. Convenience features (`auto_run`, shell shortcuts, `full` sandbox) are **opt-in risk**, never silent defaults.
 

@@ -4,9 +4,11 @@ Documentation-only guide for **SovereignInterpreter** — the local-first chat �
 
 This repository holds the operator and engineer handbook. It explains existing behavior in the main project: sovereignty doctrine, safety gates, intent detection, the execution pipeline, sandbox modes, REPL UX, and related surfaces. It does **not** ship interpreter code, tests, or runtime configs.
 
-**Main project:** [Flakiopai/SovereignInterpreter](https://github.com/Flakiopai/SovereignInterpreter)
+**Main project (v1.0.0):** [Flakiopai/SovereignInterpreter](https://github.com/Flakiopai/SovereignInterpreter) · [tag `v1.0.0`](https://github.com/Flakiopai/SovereignInterpreter/tree/v1.0.0)
 
-**Version covered:** 0.3.0
+**Handbook version:** 1.0.0 — Sovereign Edition
+
+**Release notes:** [docs/releases/v1.0.0.md](docs/releases/v1.0.0.md)
 
 Each chapter includes three explanation layers (senior engineer, beginner, and explain-like-I’m-12).
 

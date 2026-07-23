@@ -4,26 +4,45 @@
 
 `sandbox_mode` (default **`strict`**) is a policy triad enforced in config helpers, terminal runners, the respond pre-run checks, and the CLI `!` handler.
 
-| Mode | Python | Shell / `!` | `effective_roots()` |
-|------|--------|-------------|---------------------|
-| `safe` | blocked | blocked | `["./workspace"]` |
-| `strict` (default) | allowed | blocked | `["./workspace"]` |
-| `full` | allowed | allowed | configured `allowed_roots` |
+| Mode | Definition | Python | Shell / `!` | `effective_roots()` |
+|------|------------|--------|-------------|---------------------|
+| `safe` | Inspect-only; no runners | blocked | blocked | `["./workspace"]` |
+| `strict` (default) | Python in workspace; shell off | allowed | blocked | `["./workspace"]` |
+| `full` | Python + shell + configured roots | allowed | allowed | configured `allowed_roots` |
 
 Helpers: `allows_python()`, `allows_shell()`, `effective_roots()`.
 
-`%sandbox [safe|strict|full]` updates config and refreshes `computer.files.roots`.
+`%sandbox [safe|strict|full]` updates config and refreshes `computer.files.roots` (status via `[system] sandbox=…`).
+
+**Shell tip:** `!` and model shell fences require **`%sandbox full`**. In default `strict`, a blocked `!` prints `[error] Shell blocked by sandbox=strict` then `[system] Tip: use %sandbox full to enable shell commands`. Policy denials from the respond loop show `[skip]` only (no misleading `[run]`).
 
 **Deletes:** `allow_delete_default()` is **False** — filesystem delete stays denied unless an operator explicitly constructs the mutator with delete enabled.
 
 ```text
-  Mode matrix (v0.3.0)
+  Mode matrix
 
            python   shell    FS roots
   safe       ✗        ✗      ./workspace
   strict     ✓        ✗      ./workspace
   full       ✓        ✓      allowed_roots
                              (e.g. ./workspace, ./examples)
+```
+
+Live REPL shape:
+
+```text
+  You: %sandbox
+  [system] sandbox=strict
+
+  You: !ls
+  [error] Shell blocked by sandbox=strict
+  [system] Tip: use %sandbox full to enable shell commands
+
+  You: %sandbox full
+  [system] sandbox=full
+
+  You: !ls
+  [console] …
 ```
 
 Important distinction: sandbox mode gates **what may run** and **which roots the FS mutator sees**. It is not an OS container. Subprocesses still run as local processes under policy (see [Runners](12-runners.md)).
@@ -33,16 +52,16 @@ Important distinction: sandbox mode gates **what may run** and **which roots the
 Pick how brave you want to be:
 
 - **safe** — talk / inspect only; no Python or shell runs  
-- **strict** — Python OK inside `./workspace`; no shell  
-- **full** — Python + shell + your configured folders  
+- **strict** — Python OK inside `./workspace`; no shell (default)  
+- **full** — Python + shell + your configured folders — required for `!`  
 
-Default is **strict**. Use `%sandbox` in the REPL to check or change.
+Use `%sandbox` to check or change. If shell is blocked, the tip says to run `%sandbox full`.
 
 | You try | In `strict` | In `full` |
 |---------|-------------|-----------|
-| `print(1)` | runs | runs |
-| `!ls` | blocked | runs |
-| model shell fence | blocked | may run if intent/confirm pass |
+| `print(1)` | `[console]` | `[console]` |
+| `!ls` | `[error]` + `[system]` tip | `[console]` |
+| model shell fence | `[skip]` | may run if intent/confirm pass |
 
 ## Explain like I’m 12
 
@@ -63,7 +82,7 @@ If you try scissors in strict mode, the robot says “not allowed” and stops.
 - `sovereigninterpreter/cli.py` — `%sandbox`, `!` gate
 - `sovereign.yaml` — `sandbox_mode: strict`
 - Tests: `tests/test_sandbox.py`
-- CHANGELOG `[0.3.0]` sandbox notes
+- CHANGELOG `[1.0.0]` / `[0.3.0]` sandbox notes
 
 ## Key takeaway
 
